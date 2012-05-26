@@ -42,6 +42,7 @@ void* Session(void *arg){
 		
 		switch(packet_type){
 		case PACKET_AUTH_REQUEST:
+			print_log(current_session->thread_info, "Got auth packet from %s", ((packet_auth_request*)data)->login);
 			authenticate(current_session, (packet_auth_request*)data);
 			send_auth_response(current_session);
 			break;
