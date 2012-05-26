@@ -42,7 +42,8 @@ void* Session(void *arg){
 		
 		switch(packet_type){
 		case PACKET_AUTH_REQUEST:
-			
+			authenticate(current_session, (packet_auth_request*)data);
+			send_auth_response(current_session);
 			break;
 		default:
 			print_log(current_session->thread_info, "Got unknown packet");
@@ -50,4 +51,20 @@ void* Session(void *arg){
 		}
 		free(data);
 	}
+}
+
+void authenticate(session *s, packet_auth_request *packet){
+	
+}
+
+void send_auth_response(session *s){
+	packet_auth_response packet;
+	if(!user_is_authorized(s)) return;
+	packet.userid = htonl(s->userid);
+	packet_send(s->client_socket, PACKET_AUTH_RESPONSE, sizeof(packet), &pakcet);
+}
+
+int user_is_authorized(session *s){
+	if(s->state != SESSION_STATE_AUTHORIZED) return 0;
+	else return 1;
 }
