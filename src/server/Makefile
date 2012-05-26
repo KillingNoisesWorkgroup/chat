@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-c
 LDFLAGS=
-SOURCES=
+SOURCES=main.c logging.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=server.exe
 
