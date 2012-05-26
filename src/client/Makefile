@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-c -Wall
-LDFLAGS=
-SOURCES=
+LDFLAGS= -lpthread
+SOURCES= main.c 
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=client.exe
 
