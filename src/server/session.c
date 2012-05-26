@@ -61,7 +61,7 @@ void send_auth_response(session *s){
 	packet_auth_response packet;
 	if(!user_is_authorized(s)) return;
 	packet.userid = htonl(s->userid);
-	packet_send(s->client_socket, PACKET_AUTH_RESPONSE, sizeof(packet), &pakcet);
+	packet_send(s->client_socket, PACKET_AUTH_RESPONSE, sizeof(packet), &packet);
 }
 
 int user_is_authorized(session *s){

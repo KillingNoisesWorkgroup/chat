@@ -4,6 +4,8 @@
 #include <pthread.h>
 #include <stdint.h>
 
+#include "../shared/networking.h"
+
 #define USERNAME_MAXSIZE 256
 
 #define SESSION_STATE_INITIAL_STATE 0
