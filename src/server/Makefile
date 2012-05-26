@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-c
-LDFLAGS=
-SOURCES=main.c logging.c
+LDFLAGS= -lpthread
+SOURCES=main.c logging.c session.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=server.exe
 
