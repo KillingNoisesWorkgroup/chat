@@ -13,3 +13,11 @@ typedef struct packet_auth_request{
 	char login[PLAYER_NAME_MAXSIZE];
 	char passw[ENCRYPTED_PASSWORD_LENGTH];
 } packet_auth_request;
+
+
+/* PACKET S2C - Auth Response */
+
+#define PACKET_AUTH_RESPONSE 2
+typedef struct packet_auth_response{
+	uint32_t userid;
+} packet_auth_response;
