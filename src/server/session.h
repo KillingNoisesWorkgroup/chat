@@ -15,6 +15,7 @@ typedef struct session{
 	int client_socket;
 	int state;
 	struct sockaddr_in *client_addres;
+	char thread_info[128];
 } session;
 
 // Initializes new session

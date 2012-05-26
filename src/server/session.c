@@ -8,11 +8,13 @@
 
 void create_session(int client_socket, struct sockaddr_in *client_addres){
 	session *new_session;
+	
 	if((new_session = malloc(sizeof(session))) == NULL){
 		perror("malloc");
 		exit(1);
 	}
 	
+	sprintf(new_session->thread_info, "unnamed");
 	new_session->state = SESSION_STATE_INITIAL_STATE;
 	new_session->client_socket = client_socket;
 	new_session->client_addres = client_addres;
@@ -34,7 +36,7 @@ void* Session(void *arg){
 	while(1){
 		
 		if( !packet_recv(current_session->client_socket, &packet_type, &length, &data)){
-			print_log("some thread", "Client disconnected");
+			print_log(current_session->thread_info, "Client disconnected");
 			break;
 		}
 		
@@ -43,7 +45,7 @@ void* Session(void *arg){
 			
 			break;
 		default:
-			print_log("some thread", "Got unknown packet");
+			print_log(current_session->thread_info, "Got unknown packet");
 			break;
 		}
 		free(data);
