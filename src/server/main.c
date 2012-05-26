@@ -49,6 +49,7 @@ int main(int argc, char **args){
 			perror("accept");
 			exit(1);
 		}
+		create_session(client_socket, client_addres);
 		print_log("main", "Client connected on socket %d", client_socket);
 	}
 	return 0;
