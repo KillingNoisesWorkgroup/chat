@@ -17,12 +17,16 @@ typedef struct session{
 	pthread_t thread;
 	int client_socket;
 	int state;
-	struct sockaddr_in *client_addres;
+	struct sockaddr_in *client_address;
 	char thread_info[128];
 } session;
 
 // Initializes new session
 void create_session(int client_socket, struct sockaddr_in *client_addres);
+
+// Searches login entry login in sessions array and places it in *s
+// Return -1 on failure, index in sessions array on success
+int session_find_id(uint32_t id, session **s);
 
 // Does all the free's after session is finished
 void destroy_session(session *s);
@@ -42,5 +46,8 @@ login_entry* reg_new_user(packet_auth_request* packet, int id, char* hex);
 
 // Sends packet_auth_response
 void send_auth_response(session *s);
+
+// Sends packet_client_address
+void send_client_address(session *s, packet_direct_connection_request *packet);
 
 #endif

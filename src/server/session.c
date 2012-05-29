@@ -3,6 +3,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 
 #include "session.h"
 #include "../shared/networking.h"
@@ -35,12 +36,28 @@ void create_session(int client_socket, struct sockaddr_in *client_addres){
 	sprintf(new_session->thread_info, "unnamed");
 	new_session->state = SESSION_STATE_INITIAL_STATE;
 	new_session->client_socket = client_socket;
-	new_session->client_addres = client_addres;
+	new_session->client_address = client_addres;
 
 	if( (pthread_create(&new_session->thread, NULL, (void*)Session, (void*)new_session)) != 0){
 		perror("pthread_create");
 		exit(1);
 	}
+}
+
+int session_find_id(uint32_t id, session **s){
+	session* sess;
+	int i, b = 0;
+	sess = NULL;
+	for(i = 0; i < database.sessions->size; i++){
+		if(((session*)(database.sessions->data[i]))->user->id == id){
+			sess = (session*)(database.sessions->data[i]);
+			b = 1;
+			break;
+		}
+	}
+	*s = sess;
+	if(b) return i;
+	else return -1;
 }
 
 void* Session(void *arg){
@@ -63,6 +80,10 @@ void* Session(void *arg){
 			print_log(current_session->thread_info, "Got auth packet from %s", ((packet_auth_request*)data)->login);
 			authenticate(current_session, (packet_auth_request*)data);
 			send_auth_response(current_session);
+			break;
+		case PACKET_DIRECT_CONNECTION_REQUEST:
+			print_log(current_session->thread_info, "Got direct connection request\n");
+			send_client_address(current_session, data);
 			break;
 		default:
 			print_log(current_session->thread_info, "Got unknown packet");
@@ -121,6 +142,18 @@ void send_auth_response(session *s){
 	if(!user_is_authorized(s)) return;
 	packet.userid = htonl(s->user->id);
 	packet_send(s->client_socket, PACKET_AUTH_RESPONSE, sizeof(packet), &packet);
+}
+
+void send_client_address(session *s, packet_direct_connection_request *packet){
+	packet_client_address client_address;
+	session *other;
+	client_address.sin_family = s->client_address->sin_family;
+	client_address.sin_port = packet->port;
+	client_address.s_addr = s->client_address->sin_addr.s_addr;
+	if(session_find_id(ntohl(packet->userid), &other) != -1){
+		packet_send(other->client_socket, PACKET_CLIENT_ADDRESS, sizeof(client_address), &client_address);
+		print_log(s->thread_info, "Client address sent to %s", other->user->login);
+	}
 }
 
 int user_is_authorized(session *s){
