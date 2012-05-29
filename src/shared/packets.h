@@ -21,3 +21,22 @@ typedef struct packet_auth_request{
 typedef struct packet_auth_response{
 	uint32_t userid;
 } packet_auth_response;
+
+
+/* PACKET C2S - Direct connection request */
+
+#define PACKET_DIRECT_CONNECTION_REQUEST 3
+typedef struct packet_direct_connection_request{
+	uint32_t userid;
+	uint16_t port;
+} packet_direct_connection_request;
+
+
+/* PACKET S2C - Direct connection client address */
+
+#define PACKET_CLIENT_ADDRESS 4
+typedef struct packet_client_address{
+	sa_family_t sin_family;
+	uint16_t sin_port;
+	uint32_t s_addr;
+} packet_client_address;
