@@ -40,3 +40,11 @@ typedef struct packet_client_address{
 	uint16_t sin_port;
 	uint32_t s_addr;
 } packet_client_address;
+
+
+/* PACKET C2C - Direct connection close request */
+
+#define PACKET_DIRECT_CONNECTION_CLOSE_REQUEST 5
+typedef struct packet_direct_connection_close_request{
+	//empty
+} packet_direct_connection_close_request;
