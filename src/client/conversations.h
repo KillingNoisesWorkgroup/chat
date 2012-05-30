@@ -26,5 +26,5 @@ void direct_packet_recv();
 // direct_connecting to host
 void direct_connection(struct sockaddr_in addr);
 // start hosting to client
-void hosting(int port, int userid);
+void hosting(uint16_t port, uint32_t userid);
 #endif

@@ -90,7 +90,7 @@ void session_client(void *new_session)
 	  conn_user.userid = htonl((uint32_t)userid);
 	  conn_user.port = htons((uint16_t)atoi(buf));
 	  packet_send(server_socket, PACKET_DIRECT_CONNECTION_REQUEST, sizeof(packet_direct_connection_request),&conn_user);
-	  hosting(atoi(buf), userid);	
+	  hosting(conn_user.port, conn_user.userid);	
   	}
       }
       if(strcmp(command_t, "COMMAND") == 0)

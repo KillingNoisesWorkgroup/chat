@@ -28,7 +28,7 @@ void direct_packet_send()
 	to_upper(command_t);
 	if(strcmp(command_t, "MESSAGE"))
 	{
-	getline(buf, buf_len, stdin);
+	getline(&buf, &buf_len, stdin);
 	//packet_send(...);
     }
   }
@@ -65,7 +65,7 @@ void direct_packet_recv(int socket)
   
 }
 
-void hosting(int port, int userid)
+void hosting(uint16_t port, uint32_t userid)
 {
   conversation conv;
   struct sockaddr_in addr;
@@ -76,7 +76,7 @@ void hosting(int port, int userid)
     perror("socket(): ");
     exit(2);
   }
-
+  
   conv.port = htons((u_short)port);
   addr.sin_family = AF_INET;			
   addr.sin_port = conv.port;
