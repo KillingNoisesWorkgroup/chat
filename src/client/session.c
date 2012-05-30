@@ -72,7 +72,7 @@ void session_client(void *new_session)
       if(strcmp(command_t, "ADD") == 0)
       {
         scanf("%s", buf);
-        //packet_send(user->socket, LOGIN, strlen(user->buf)+1, user->buf);
+        //packet_send(...);
       }
       if(strcmp(command_t, "ID") == 0)
       {
@@ -92,7 +92,6 @@ void session_client(void *new_session)
 	  packet_send(server_socket, PACKET_DIRECT_CONNECTION_REQUEST, sizeof(packet_direct_connection_request),&conn_user);
 	  hosting(atoi(buf), userid);	
   	}
-        //packet_send(user->socket, LOGIN, strlen(user->buf)+1, user->buf);
       }
       if(strcmp(command_t, "COMMAND") == 0)
       {

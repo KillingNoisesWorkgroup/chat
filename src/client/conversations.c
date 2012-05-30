@@ -19,7 +19,8 @@ void to_upper(char *str)
 
 void direct_packet_send()
 {
-  char buf[512];
+  char *buf = NULL;
+  size_t buf_len;
   char *command_t = malloc(1);
   while(1)
   {
@@ -27,8 +28,8 @@ void direct_packet_send()
 	to_upper(command_t);
 	if(strcmp(command_t, "MESSAGE"))
 	{
-	gets(buf);
-	//packet_send(user->socket, LOGIN, strlen(user->buf)+1, user->buf);
+	getline(buf, buf_len, stdin);
+	//packet_send(...);
     }
   }
 }
