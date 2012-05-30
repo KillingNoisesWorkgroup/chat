@@ -36,9 +36,8 @@ typedef struct packet_direct_connection_request{
 
 #define PACKET_CLIENT_ADDRESS 4
 typedef struct packet_client_address{
-	unsigned short sin_family;
-	uint16_t sin_port;
-	uint32_t s_addr;
+	uint16_t port;
+	uint32_t address;
 } packet_client_address;
 
 
