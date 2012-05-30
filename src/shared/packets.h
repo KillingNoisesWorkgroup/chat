@@ -52,7 +52,9 @@ typedef struct packet_direct_connection_close_request{
 /* PACKET - Message */
 
 #define CHAT_MESSAGE_MAXSIZE 512
-typedef char[CHAT_MESSAGE_MAXSIZE] message_t;
+typedef struct message_t{
+	char text[CHAT_MESSAGE_MAXSIZE];
+} message_t;
 
 #define PACKET_CHAT_MESSAGE 6
 typedef struct packet_chat_message{
