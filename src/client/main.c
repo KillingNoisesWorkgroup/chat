@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     perror("Client: socket(): ");
     exit(2);
   }
-// Устанавливаем соединение с сокетом сервера
+
   if (connect(server_socket, (struct sockaddr*)&serv_addr, 
 	  sizeof(serv_addr)) == -1){
     perror("Client: connect(): ");
