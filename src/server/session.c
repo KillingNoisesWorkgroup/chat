@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "session.h"
 #include "../shared/networking.h"
@@ -25,7 +26,7 @@ char* passw_to_hex(unsigned char * passw, int size){
 	return hex;
 }
 
-void create_session(int client_socket, struct sockaddr_in *client_addres){
+void create_session(int client_socket, struct sockaddr_in client_addres){
 	session *new_session;
 	
 	if((new_session = malloc(sizeof(session))) == NULL){
@@ -36,7 +37,7 @@ void create_session(int client_socket, struct sockaddr_in *client_addres){
 	sprintf(new_session->thread_info, "unnamed");
 	new_session->state = SESSION_STATE_INITIAL_STATE;
 	new_session->client_socket = client_socket;
-	new_session->client_address = client_addres;
+	memcpy(&new_session->client_address, &client_addres, sizeof(struct sockaddr_in));
 
 	if( (pthread_create(&new_session->thread, NULL, (void*)Session, (void*)new_session)) != 0){
 		perror("pthread_create");
@@ -75,7 +76,7 @@ void* Session(void *arg){
 			print_log(current_session->thread_info, "Client disconnected");
 			destroy_session(current_session);
 		}
-		 packet_debug_full(packet_type, length, data);
+		//packet_debug_full(packet_type, length, data);
 		switch(packet_type){
 		case PACKET_AUTH_REQUEST:
 			print_log(current_session->thread_info, "Got auth packet from %s", ((packet_auth_request*)data)->login);
@@ -83,7 +84,7 @@ void* Session(void *arg){
 			send_auth_response(current_session);
 			break;
 		case PACKET_DIRECT_CONNECTION_REQUEST:
-			print_log(current_session->thread_info, "Got direct connection request\n");
+			print_log(current_session->thread_info, "Got direct connection request");
 			send_client_address(current_session, data);
 			break;
 		default:
@@ -148,12 +149,11 @@ void send_auth_response(session *s){
 void send_client_address(session *s, packet_direct_connection_request *packet){
 	packet_client_address client_address;
 	session *other;
-	client_address.sin_family = s->client_address->sin_family;
-	client_address.sin_port = packet->port;
-	client_address.s_addr = s->client_address->sin_addr.s_addr;
+	client_address.port = htons(packet->port);
+	client_address.address = s->client_address.sin_addr.s_addr;
 	if(session_find_id(ntohl(packet->userid), &other) != -1){
 		packet_send(other->client_socket, PACKET_CLIENT_ADDRESS, sizeof(client_address), &client_address);
-		print_log(s->thread_info, "Client address sent to %s", other->user->login);
+		print_log(s->thread_info, "Client address sent to %s", inet_ntoa(other->client_address.sin_addr));
 	}
 }
 

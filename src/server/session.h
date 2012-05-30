@@ -3,6 +3,9 @@
 
 #include <pthread.h>
 #include <stdint.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "../shared/networking.h"
 #include "login_entry.h"
@@ -17,12 +20,12 @@ typedef struct session{
 	pthread_t thread;
 	int client_socket;
 	int state;
-	struct sockaddr_in *client_address;
+	struct sockaddr_in client_address;
 	char thread_info[128];
 } session;
 
 // Initializes new session
-void create_session(int client_socket, struct sockaddr_in *client_addres);
+void create_session(int client_socket, struct sockaddr_in client_addres);
 
 // Searches login entry login in sessions array and places it in *s
 // Return -1 on failure, index in sessions array on success
