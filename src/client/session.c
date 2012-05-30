@@ -46,9 +46,8 @@ void create_session(char *login, char *passw, int server_socket,struct sockaddr_
 	new_session.my_id = ntohl(((packet_auth_response*)(packet))->userid);
 	break;
       case PACKET_CLIENT_ADDRESS:
-	addr.sin_family = ((packet_client_address*)(packet))->sin_family;
-	addr.sin_port = ((packet_client_address*)(packet))->sin_port;
-	addr.sin_addr.s_addr = ((packet_client_address*)(packet))->s_addr;
+	addr.sin_port = ((packet_client_address*)(packet))->port;
+	addr.sin_addr.s_addr = ((packet_client_address*)(packet))->address;
         direct_connection(addr);
 	break;
       default:
@@ -93,9 +92,9 @@ void session_client(void *new_session)
 	  hosting(conn_user.port, conn_user.userid);	
   	}
       }
-      if(strcmp(command_t, "COMMAND") == 0)
+      if(strcmp(command_t, "COMMANDS") == 0)
       {
-        printf("init\nadd        <id>\nlist\nhost       <port> <id>\n");
+        printf("id\nadd        <id>\nlist\nhost       <port> <id>\n");
       }
    
   }  

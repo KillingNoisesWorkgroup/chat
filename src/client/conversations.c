@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <string.h>
+#include <errno.h>
 
 #include "conversations.h"
 #include "../shared/networking.h"
@@ -30,7 +31,11 @@ void direct_packet_send()
 	{
 	getline(&buf, &buf_len, stdin);
 	//packet_send(...);
-    }
+    	}
+	if(strcmp(command_t, "COMMANDS"))
+	{
+	printf("message <text>");
+    	}
   }
 }
 void direct_packet_recv(int socket)
@@ -56,7 +61,7 @@ void direct_packet_recv(int socket)
     packet_debug_full(packet_type, length, packet);
     switch(packet_type)
     {
-      case 0:
+      case 0://PACKET_MESSAGE:
 	break;
       default:
 	break;
@@ -65,7 +70,7 @@ void direct_packet_recv(int socket)
   
 }
 
-void hosting(uint16_t port, uint32_t userid)
+ void hosting(uint16_t port, uint32_t userid)
 {
   conversation conv;
   struct sockaddr_in addr;
@@ -77,9 +82,12 @@ void hosting(uint16_t port, uint32_t userid)
     exit(2);
   }
   
+  bzero(&addr, sizeof(addr));
   conv.port = htons((u_short)port);
-  addr.sin_family = AF_INET;			
-  addr.sin_port = conv.port;
+  addr.sin_family = PF_INET;
+  addr.sin_port = htons(port);
+  addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  
   
   if (bind(conv.socket, (struct sockaddr*)&addr, sizeof(addr)) == -1)
   {
@@ -93,8 +101,20 @@ void hosting(uint16_t port, uint32_t userid)
     exit(2);
   }
 
-  while((conv.socket_client = accept(conv.socket, (struct sockaddr*)&addr, &addrlen)) == -1)
+  while(1)
   {   
+    if((conv.socket_client = accept(conv.socket, (struct sockaddr*)&addr, &addrlen)) == -1)
+    {
+      if (errno == EINTR)
+      {
+        continue;
+      }	
+      else 
+      {
+        perror("accept(): ");
+        exit(2);
+      }
+    }
     direct_packet_recv(conv.socket_client);
   }
 }
