@@ -38,7 +38,8 @@ void create_session(int client_socket, struct sockaddr_in client_addres){
 	new_session->state = SESSION_STATE_INITIAL_STATE;
 	new_session->client_socket = client_socket;
 	memcpy(&new_session->client_address, &client_addres, sizeof(struct sockaddr_in));
-
+	
+	dynamic_array_add(database.sessions, new_session);
 	if( (pthread_create(&new_session->thread, NULL, (void*)Session, (void*)new_session)) != 0){
 		perror("pthread_create");
 		exit(1);
@@ -51,6 +52,7 @@ int session_find_id(uint32_t id, session **s){
 	if(id < 1) return -1;
 	sess = NULL;
 	for(i = 0; i < database.sessions->size; i++){
+		printf("i %d\n", i);
 		if(((session*)(database.sessions->data[i]))->user->id == id){
 			sess = (session*)(database.sessions->data[i]);
 			b = 1;
@@ -149,7 +151,7 @@ void send_auth_response(session *s){
 void send_client_address(session *s, packet_direct_connection_request *packet){
 	packet_client_address client_address;
 	session *other;
-	client_address.port = htons(packet->port);
+	client_address.port = packet->port;
 	client_address.address = s->client_address.sin_addr.s_addr;
 	if(session_find_id(ntohl(packet->userid), &other) != -1){
 		packet_send(other->client_socket, PACKET_CLIENT_ADDRESS, sizeof(client_address), &client_address);
