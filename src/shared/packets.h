@@ -47,3 +47,16 @@ typedef struct packet_client_address{
 typedef struct packet_direct_connection_close_request{
 	//empty
 } packet_direct_connection_close_request;
+
+
+/* PACKET - Message */
+
+#define CHAT_MESSAGE_MAXSIZE 512
+typedef char[CHAT_MESSAGE_MAXSIZE] message_t;
+
+#define PACKET_CHAT_MESSAGE 6
+typedef struct packet_chat_message{
+	uint32_t senderid;
+	uint32_t receiverid;
+	message_t message;
+} packet_chat_message;
