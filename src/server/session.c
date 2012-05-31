@@ -52,7 +52,6 @@ int session_find_id(uint32_t id, session **s){
 	if(id < 1) return -1;
 	sess = NULL;
 	for(i = 0; i < database.sessions->size; i++){
-		printf("i %d\n", i);
 		if(((session*)(database.sessions->data[i]))->user->id == id){
 			sess = (session*)(database.sessions->data[i]);
 			b = 1;
@@ -78,7 +77,7 @@ void* Session(void *arg){
 			print_log(current_session->thread_info, "Client disconnected");
 			destroy_session(current_session);
 		}
-		//packet_debug_full(packet_type, length, data);
+		packet_debug_full(packet_type, length, data);
 		switch(packet_type){
 		case PACKET_AUTH_REQUEST:
 			print_log(current_session->thread_info, "Got auth packet from %s", ((packet_auth_request*)data)->login);
@@ -173,10 +172,8 @@ void send_client_address(session *s, packet_direct_connection_request *packet){
 
 void send_chat_message(session *s, packet_chat_message *packet){
 	session *tmp;
-	int pos;
-	
-	pos = session_find_id(s->user->id, &tmp);
-	packet_send(s->client_socket, PACKET_CHAT_MESSAGE, sizeof(packet), packet);
+	session_find_id(packet->receiverid, &tmp);
+	packet_send(tmp->client_socket, PACKET_CHAT_MESSAGE, sizeof(packet_chat_message), packet);
 }
 
 int user_is_authorized(session *s){
