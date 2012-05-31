@@ -5,12 +5,12 @@
 
 /* PACKET C2S - Auth Request */
 
-#define PLAYER_NAME_MAXSIZE 256
+#define USER_NAME_MAXSIZE 256
 #define ENCRYPTED_PASSWORD_LENGTH MD5_DIGEST_LENGTH
 
 #define PACKET_AUTH_REQUEST 1
 typedef struct packet_auth_request{
-	char login[PLAYER_NAME_MAXSIZE];
+	char login[USER_NAME_MAXSIZE];
 	char passw[ENCRYPTED_PASSWORD_LENGTH];
 } packet_auth_request;
 
@@ -62,3 +62,37 @@ typedef struct packet_chat_message{
 	uint32_t receiverid;
 	message_t message;
 } packet_chat_message;
+
+
+/* PACKET C2S - Contact list request */
+
+#define PACKET_CONTACT_LIST_REQUEST 7
+typedef struct packet_contact_list_request{
+	//empty
+} packet_contact_list_request;
+
+
+/* PACKET S2C - Contact */
+
+#define PACKET_CONTACT 8
+typedef struct packet_contact{
+	uint32_t id;
+	char name[USER_NAME_MAXSIZE];
+} packet_contact_list;
+
+/* PACKET - Contact list add request */
+
+#define PACKET_CONTACT_LIST_ADD_REQUEST 9
+typedef struct packet_contact_list_add_request{
+	uint32_t senderid;
+	uint32_t receiverid;
+} packet_contact_list_add_request;
+
+/* PACKET - Contact list add response */
+
+#define PACKET_CONTACT_LIST_ADD_RESPONSE 10
+typedef struct packet_contact_list_add_response{
+	uint32_t senderid;
+	uint32_t receiverid;
+	uint8_t accepted;
+} packet_contact_list_add_response;
