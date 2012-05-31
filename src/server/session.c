@@ -89,6 +89,10 @@ void* Session(void *arg){
 			print_log(current_session->thread_info, "Got direct connection request");
 			send_client_address(current_session, data);
 			break;
+		case PACKET_CHAT_MESSAGE:
+			print_log(current_session->thread_info, "Got chat message");
+			send_chat_message(current_session, data);
+			break;
 		default:
 			print_log(current_session->thread_info, "Got unknown packet");
 			break;
@@ -135,9 +139,17 @@ void authenticate(session *s, packet_auth_request *packet){
 	free(hex);
 }
 
+
 void destroy_session(session* s){
+	session *tmp;
+	int pos;
+
 	close(s->client_socket);
+
+	pos = session_find_id(s->user->id, &tmp);
+	dynamic_array_delete_at(database.sessions, pos);
 	print_log(s->thread_info, "Session terminated");
+
 	pthread_exit(NULL);
 }
 
@@ -157,6 +169,14 @@ void send_client_address(session *s, packet_direct_connection_request *packet){
 		packet_send(other->client_socket, PACKET_CLIENT_ADDRESS, sizeof(client_address), &client_address);
 		print_log(s->thread_info, "Client address sent to %s", inet_ntoa(other->client_address.sin_addr));
 	}
+}
+
+void send_chat_message(session *s, packet_chat_message *packet){
+	session *tmp;
+	int pos;
+	
+	pos = session_find_id(s->user->id, &tmp);
+	packet_send(s->client_socket, PACKET_CHAT_MESSAGE, sizeof(packet), packet);
 }
 
 int user_is_authorized(session *s){

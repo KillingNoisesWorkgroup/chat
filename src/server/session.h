@@ -53,4 +53,7 @@ void send_auth_response(session *s);
 // Sends packet_client_address
 void send_client_address(session *s, packet_direct_connection_request *packet);
 
+// Sends packet_chat_message
+void send_chat_message(session *s, packet_chat_message *packet);
+
 #endif
