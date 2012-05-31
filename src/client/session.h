@@ -8,13 +8,15 @@
 
 typedef struct session
 {
-  int s_serv;
-  int s_cl;
-  uint32_t my_id;
-  struct sockaddr_in *serv_addr;
-  pthread_t thread;
+	int s_serv;
+	int s_cl;
+	uint32_t my_id;
+	struct sockaddr_in addr;
+	struct sockaddr_in connect_addr;
+	pthread_t thread;
 }session;
 
+session *new_session;
 
 void create_session(char *login, char *passw, int server_socket,struct sockaddr_in *serv_addr);
 

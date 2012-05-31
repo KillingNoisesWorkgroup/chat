@@ -14,8 +14,7 @@
 
 #include "session.h"
 #include "../shared/networking.h"
-
-
+#include "conversations.h"
   
 int main(int argc, char **argv)
 {
@@ -34,10 +33,10 @@ int main(int argc, char **argv)
     
   bzero(&serv_addr, sizeof(serv_addr));
   bcopy(hp->h_addr, &serv_addr.sin_addr, hp->h_length);
-  serv_addr.sin_family = hp->h_addrtype;
+  serv_addr.sin_family = PF_INET;
   serv_addr.sin_port = htons(atoi(argv[2]));
   
-  if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1){
+  if ((server_socket = socket(PF_INET, SOCK_STREAM, 0)) == -1){
     perror("Client: socket(): ");
     exit(2);
   }

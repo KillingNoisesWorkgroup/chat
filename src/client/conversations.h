@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <ctype.h>
 
+#include "session.h"
 #include "../shared/networking.h"
 
 
@@ -15,16 +16,19 @@ typedef struct conversation
 	int socket_client;
 	uint16_t port;
 	int socket;
-} conversation;  
+} conversation;
+  
+pthread_mutex_t address_lock;
 
 void to_upper(char *str);
 
-void direct_packet_send();
+void hosting(uint16_t port);
 
-void direct_packet_recv();
+void* HostThread(void *arg);
 
-// direct_connecting to host
-void direct_connection(struct sockaddr_in addr);
-// start hosting to client
-void hosting(uint16_t port, uint32_t userid);
+void connect_to_client(void *arg);
+
+void* ClientConnectionThread(void *arg);
+
+void recving_packets();
 #endif
