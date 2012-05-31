@@ -12,7 +12,7 @@ login_entry* init_login_entry(int id){
 		perror("malloc");
 		exit(1);
 	}
-	if( (log_e->login = malloc(PLAYER_NAME_MAXSIZE + 1)) == NULL){
+	if( (log_e->login = malloc(USER_NAME_MAXSIZE + 1)) == NULL){
 		perror("malloc");
 		exit(1);
 	}
