@@ -39,7 +39,7 @@ void command_message(int server_socket)
 		packet.receiverid = id;
 		memcpy(packet.message.text, str, CHAT_MESSAGE_MAXSIZE);	
 		printf("Debug senderid = %d\nDebug receiverid = %d\nDebug text = %s", packet.senderid, packet.receiverid, packet.message.text);
-		packet_send(server_socket, PACKET_DIRECT_CONNECTION_REQUEST, sizeof(packet), &packet);
+		packet_send(server_socket,  PACKET_CHAT_MESSAGE, sizeof(packet), &packet);
   	}
 }
 
