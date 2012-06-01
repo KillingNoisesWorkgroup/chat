@@ -172,8 +172,8 @@ void send_client_address(session *s, packet_direct_connection_request *packet){
 
 void send_chat_message(session *s, packet_chat_message *packet){
 	session *tmp;
-	session_find_id(packet->receiverid, &tmp);
-	packet_send(tmp->client_socket, PACKET_CHAT_MESSAGE, sizeof(packet_chat_message), packet);
+	if(session_find_id(packet->receiverid, &tmp) != -1)
+		packet_send(tmp->client_socket, PACKET_CHAT_MESSAGE, sizeof(packet_chat_message), packet);
 }
 
 int user_is_authorized(session *s){
