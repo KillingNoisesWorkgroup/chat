@@ -6,10 +6,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <ctype.h>
+#include <netdb.h>
 
 #include "session.h"
 #include "../shared/networking.h"
-
 
 typedef struct conversation
 {
@@ -30,5 +30,9 @@ void connect_to_client(void *arg);
 
 void* ClientConnectionThread(void *arg);
 
-void recving_packets();
+void connecting(char* str);
+
+void* ConnectionThread(void *arg);
+
+void recving_packets(int socket_host);
 #endif
