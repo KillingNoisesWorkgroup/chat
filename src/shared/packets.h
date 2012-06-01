@@ -74,11 +74,16 @@ typedef struct packet_contact_list_request{
 
 /* PACKET S2C - Contact */
 
+typedef struct contact_t{
+	uint32_t id;
+	char name[USER_NAME_MAXSIZE]; 
+} contact_t;
+
 #define PACKET_CONTACT 8
 typedef struct packet_contact{
-	uint32_t id;
-	char name[USER_NAME_MAXSIZE];
+	contact_t contact;
 } packet_contact_list;
+
 
 /* PACKET - Contact list add request */
 
