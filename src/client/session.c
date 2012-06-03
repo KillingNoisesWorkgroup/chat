@@ -9,49 +9,67 @@
 #include "conversations.h"
 #include "../shared/networking.h"
 
+uint16_t parse_id(char *str){
+	int i;
+	uint16_t id;
+	char buf[128], tmp;
+	buf[0] = 0;
+	if((id = atoi(str)) == 0) return 0;
+	for(i = 0; i < strlen(str) - 1; i++){
+		tmp = str[i];
+		if(tmp == ':'){
+			id = atoi(buf);
+			break;
+		}
+		buf[i] = tmp;
+	}
+	return id; 
+}
 
-void command_connect(int server_socket){
-	//packet_direct_connection_request packet;
+char* parse_message(char *str){
+	int i;
+	char *message;	
+	for(i = 0; i < strlen(str) - 1; str++){
+		if(*str == ':') break;
+	}
+	message = str+1;
+	return message;
+}
+
+
+void command_connect(char *strline){
 	char* str = malloc(1);	
-	if(scanf("%s", str) != 1){
+	char* trash = malloc(1);
+	if(sscanf(strline, "%s %s", trash, str) != 2){
 		printf("incorrectly entered : <address>:<port> [/connect 0.0.0.0:1111]\n");	
 	}else{
 		connecting(str);
   	}
 }
 
-void command_host(int server_socket)
-{
+void command_host(char *strline){
 	packet_direct_connection_request packet;
-	int port;
-	if(scanf("%d", &port) != 1){
+	uint32_t port;
+	char *trash = malloc(1);
+	if(sscanf(strline, "%s %d",trash, &port) != 2){
 		printf("incorrectly entered : <port> [/host 1111]\n");	
 	}else{
-		//packet.userid = htonl((uint32_t)userid);
-		packet.port = htons((uint16_t)port);
-		
-		//packet_send(server_socket, PACKET_DIRECT_CONNECTION_REQUEST, sizeof(packet), &packet);
-		hosting(packet.port);
+		new_session->port = htons(port);
+		hosting();
   	}
 }
 
-void command_message(int server_socket){
+void command_message(char* message, uint16_t userid){
 	packet_chat_message packet;
-	char *str = NULL;
-	size_t str_len;
-	uint32_t id;
-	if(scanf("%d ", &id) != 1 ){
-		printf("incorrectly entered : <id> <text> [/message 8 Hello world]\n");	
-	}else{
-		getline(&str, &str_len, stdin);
-		str++;		
-		packet.senderid = new_session->my_id;
-		packet.receiverid = id;
-		memcpy(packet.message.text, str, CHAT_MESSAGE_MAXSIZE);	
-		printf("Debug senderid = %d\nDebug receiverid = %d\nDebug text = %s", packet.senderid, packet.receiverid, packet.message.text);
-		packet_send(server_socket,  PACKET_CHAT_MESSAGE, sizeof(packet), &packet);
-  	}
+	packet.senderid = new_session->my_id;
+	packet.receiverid = userid;
+	memcpy(packet.message.text, parse_message(message), CHAT_MESSAGE_MAXSIZE);
+	if(userid > 999)
+		packet_send(new_session->s_cl,  PACKET_CHAT_MESSAGE, sizeof(packet), &packet);
+	else
+		packet_send(new_session->s_serv,  PACKET_CHAT_MESSAGE, sizeof(packet), &packet);
 }
+
 
 void create_session(char *login, char *passw, int server_socket,struct sockaddr_in *serv_addr){
 	packet_auth_request auth;
@@ -70,7 +88,7 @@ void create_session(char *login, char *passw, int server_socket,struct sockaddr_
 	strcpy(auth.login, login);
 	auth.login[-1] = '\0';
 	MD5((unsigned char *) passw, strlen(passw), (unsigned char*)&auth.passw);
-  	packet_send(server_socket, PACKET_AUTH_REQUEST, sizeof(packet_auth_request), &auth);
+  	packet_send(new_session->s_serv, PACKET_AUTH_REQUEST, sizeof(packet_auth_request), &auth);
   	
  	if((pthread_create(&new_session->thread, NULL, (void*)session_client, NULL)) != 0 )
   	{
@@ -78,24 +96,22 @@ void create_session(char *login, char *passw, int server_socket,struct sockaddr_
     	exit(1);  
   	}
   	while(1){
-	    	if( !packet_recv(server_socket, &packet_type, &length, &packet)) 
+	    	if( !packet_recv(new_session->s_serv, &packet_type, &length, &packet)) 
 	    	{
 	     		printf("Connection closed\n");
 	     		exit(1);
 	    	}
-		packet_debug_full(packet_type, length, packet);
 		switch(packet_type)
 	    	{
 	      	case PACKET_AUTH_RESPONSE:
 			new_session->my_id = ntohl(((packet_auth_response*)(packet))->userid);
 			break;
 	      	case PACKET_CLIENT_ADDRESS:
-			//new_session->connect_addr.sin_port = ((packet_client_address*)(packet))->port;
-			//new_session->connect_addr.sin_addr.s_addr = ((packet_client_address*)(packet))->address;
 	       		connect_to_client(new_session);
 			break;
 		case PACKET_CHAT_MESSAGE:
 			printf("%d : %s\n", ((packet_chat_message*)packet)->senderid, ((packet_chat_message*)packet)->message.text);	      	
+			break;
 		default:
 			break;
 	    		}
@@ -104,27 +120,33 @@ void create_session(char *login, char *passw, int server_socket,struct sockaddr_
 
 void session_client(void *arg)
 {
-  	//char buf[512];
  	char *command_t = malloc(1);
- 	int server_socket = new_session->s_serv;
-	while(1){
-	scanf("%s", command_t);
-	to_upper(command_t);
-	printf("%s\n", command_t);
-      	if(strcmp(command_t, "ID") == 0){
-	        printf("My id = %d", new_session->my_id);
-	        fflush(stdout);
-	}
-	if(strcmp(command_t, "/HOST") == 0)
-		command_host(server_socket);
-	if(strcmp(command_t, "/MESSAGE") == 0)
-		command_message(server_socket);
-	if(strcmp(command_t, "/CONNECT") == 0){
-		command_connect(server_socket);
-	}	
-	if(strcmp(command_t, "/COMMANDS") == 0)
-	        printf("/id\nadd        <id>\n/message     <text>\n/host       <port>\n/connect    <address>:<port>\n");
-	}
+	char *strline = malloc(1);	
+	size_t str_len;
 	
+	uint16_t userid;
+	while(1){
+		getline(&strline, &str_len, stdin);
+		if((userid = parse_id(strline)) != 0){
+			command_message(strline, userid);
+			continue;
+		}
+		sscanf(strline, "%s", command_t);
+		to_upper(command_t);
+	      	if(strcmp(command_t, "ID") == 0){
+			printf("My id = %d", new_session->my_id);
+			fflush(stdout);
+		}
+		if(strcmp(command_t, "/HOST") == 0){
+			command_host(strline);	
+		}
+		if(strcmp(command_t, "/CONNECT") == 0){
+			command_connect(strline);
+		}	
+		if(strcmp(command_t, "/COMMANDS") == 0){
+			printf("/id\n/add        <id>\n/host       <port>\n/connect    <address>:<port>\n");
+		}
+
+	}
 }
 

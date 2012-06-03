@@ -10,7 +10,9 @@ typedef struct session
 {
 	int s_serv;
 	int s_cl;
+	uint16_t port;
 	uint32_t my_id;
+	uint32_t host_id;
 	struct sockaddr_in addr;
 	struct sockaddr_in connect_addr;
 	pthread_t thread;

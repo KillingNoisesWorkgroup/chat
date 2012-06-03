@@ -22,7 +22,7 @@ pthread_mutex_t address_lock;
 
 void to_upper(char *str);
 
-void hosting(uint16_t port);
+void hosting();
 
 void* HostThread(void *arg);
 
@@ -34,5 +34,5 @@ void connecting(char* str);
 
 void* ConnectionThread(void *arg);
 
-void recving_packets(int socket_host);
+void recving_packets();
 #endif
