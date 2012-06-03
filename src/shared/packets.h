@@ -82,7 +82,7 @@ typedef struct contact_t{
 #define PACKET_CONTACT 8
 typedef struct packet_contact{
 	contact_t contact;
-} packet_contact_list;
+} packet_contact;
 
 
 /* PACKET - Contact list add request */
@@ -101,3 +101,12 @@ typedef struct packet_contact_list_add_response{
 	uint32_t receiverid;
 	uint8_t accepted;
 } packet_contact_list_add_response;
+
+
+/* PACKET C2S - Contact delete */
+
+#define PACKET_CONTACT_LIST_DELETE 11
+typedef struct packet_contact_delete{
+	uint32_t userid;
+} packet_contact_delete;
+
