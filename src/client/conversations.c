@@ -40,6 +40,7 @@ void hosting(){
 
 void* HostThread(void *arg){
 	int host_socket;
+	char str[128];
 	struct sockaddr_in host_address, client_address;
 	socklen_t client_socklen;
 
@@ -57,18 +58,21 @@ void* HostThread(void *arg){
 		perror("bind");
 		exit(1);
 	}
-
 	listen(host_socket, 10);
+	sprintf(str, "hosting on %s:%d\n", inet_ntoa(host_address.sin_addr), ntohs(host_address.sin_port));
+  	pr(str);
 	if((new_session->s_cl = accept(host_socket, (struct sockaddr *)&client_address, &client_socklen)) == -1){
 		perror("accept");
 		exit(1);
 	}
-	recving_packets();
+	
+	recving_packets(new_session->s_cl);
 	return 0;
 }
 
 void connect_to_client(void *arg){
 	pthread_t client_connection_thread;
+
 	if( (pthread_create(&client_connection_thread, NULL, (void *)ClientConnectionThread, NULL)) != 0){
 		perror("pthread_create");
 		exit(1);
@@ -84,8 +88,6 @@ void* ClientConnectionThread(void *arg){
    		perror("Client: connect(): ");
     		exit(2);
   	}
-
-	printf("%p\n", new_session);
 	recving_packets(new_session->s_cl);
 	return 0;
 }
@@ -102,7 +104,8 @@ void connecting(char *str){
 void* ConnectionThread(void *arg){
 	uint16_t port;
 	struct hostent *address;
-
+	packet_id_host id;
+	char str[128];
 	parse_address((char*)arg, &port);
 
 	address = gethostbyname((char*)arg);
@@ -121,25 +124,56 @@ void* ConnectionThread(void *arg){
    		perror("Client: connect(): ");
 		exit(2);
 	}
-	recving_packets();
+	id.hostid = new_session->my_id; 
+	packet_send(new_session->s_cl, PACKET_ID_HOST, sizeof(packet_id_host), &id);
+  	sprintf(str ,"connecting on %s:%d\n", (char*)arg, port);
+	pr(str);	
+	recving_packets(new_session->s_cl);
 	return 0;
 }
 
-void recving_packets(){
+void recving_packets(int socket){
+	packet_id_host id;
 	packet_type_t packet_type;
 	packet_length_t length;
+	char str[128];
 	void *packet;
-	while(1){
-	    	if( !packet_recv(new_session->s_cl, &packet_type, &length, &packet)){
-	     		printf("Connection closed\n");
-	     		exit(1);
-	    	}
-		switch(packet_type){
-	      	case PACKET_CHAT_MESSAGE:
-			printf("%d : %s\n", ((packet_chat_message*)packet)->senderid, ((packet_chat_message*)packet)->message.text);	      	
+
+	  	while(1){
+	    	if( !packet_recv(socket, &packet_type, &length, &packet)) 
+	    	{
+		     	if(socket == new_session->s_cl){
+				pthread_exit(NULL);
+		    	}else{
+				pr("Connection closed\n");
+		     		exit(1);	
+			}
+		}
+		switch(packet_type)
+	    	{
+	      	case PACKET_AUTH_RESPONSE:
+			new_session->my_id = ntohl(((packet_auth_response*)(packet))->userid);
 			break;
-	      	default:
+	      	case PACKET_CLIENT_ADDRESS:
+	       		connect_to_client(new_session);
 			break;
-	    	}
+		case PACKET_CHAT_MESSAGE:
+			sprintf(str, "%d : %s", ((packet_chat_message*)packet)->senderid, ((packet_chat_message*)packet)->message.text);	      	
+			pr(str);
+			break;
+		case PACKET_ID_HOST:
+			if(new_session->host_id == -1)
+			{
+				id.hostid = new_session->my_id; 
+				packet_send(new_session->s_cl, PACKET_ID_HOST, sizeof(packet_id_host), &id);
+			}		
+			new_session->host_id = ((packet_id_host*)packet)->hostid;	
+			break;
+		case PACKET_USERS_LIST_REQUEST:
+			pr((char *)packet);
+		default:
+			break;
+	    		}
 	}
+
 }

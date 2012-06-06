@@ -72,3 +72,9 @@ typedef struct packet_users_list_request{
 	uint8_t online_only;
 } packet_users_list_request;
 
+#define PACKET_ID_HOST 8
+typedef struct packet_id_host{
+	uint32_t hostid;
+} packet_id_host;
+
+

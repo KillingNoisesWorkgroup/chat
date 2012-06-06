@@ -38,11 +38,9 @@ int main(int argc, char **argv)
 		perror("Client: connect(): ");
 		exit(2);
 	}
-  
 	create_session(argv[3], argv[4], server_socket, &serv_addr);
 	close(server_socket);
-	printf("Client: Client exited.\n");
-
+	
 	return 0;
 }
 

@@ -13,6 +13,7 @@ typedef struct session
 	uint16_t port;
 	uint32_t my_id;
 	uint32_t host_id;
+	char login[128];
 	struct sockaddr_in addr;
 	struct sockaddr_in connect_addr;
 	pthread_t thread;
@@ -24,5 +25,6 @@ void create_session(char *login, char *passw, int server_socket,struct sockaddr_
 
 void session_client(void *arg);
 
+void pr(char *str);
 #endif
 

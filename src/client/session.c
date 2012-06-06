@@ -9,6 +9,11 @@
 #include "conversations.h"
 #include "../shared/networking.h"
 
+void pr(char *str){
+	printf("%s[%s]", str, new_session->login);
+	fflush(stdout);
+}
+
 uint16_t parse_id(char *str){
 	int i;
 	uint16_t id;
@@ -41,22 +46,33 @@ void command_connect(char *strline){
 	char* str = malloc(1);	
 	char* trash = malloc(1);
 	if(sscanf(strline, "%s %s", trash, str) != 2){
-		printf("incorrectly entered : <address>:<port> [/connect 0.0.0.0:1111]\n");	
+		pr("incorrectly entered : <address>:<port> [/connect 0.0.0.0:1111]\n");	
 	}else{
 		connecting(str);
   	}
 }
 
 void command_host(char *strline){
-	packet_direct_connection_request packet;
 	uint32_t port;
 	char *trash = malloc(1);
 	if(sscanf(strline, "%s %d",trash, &port) != 2){
-		printf("incorrectly entered : <port> [/host 1111]\n");	
+		pr("incorrectly entered : <port> [/host 1111]\n");	
 	}else{
 		new_session->port = htons(port);
 		hosting();
   	}
+}
+
+void command_p_list(){
+	packet_users_list_request packet;
+	packet.online_only = 1;	
+	packet_send(new_session->s_serv, PACKET_USERS_LIST_REQUEST, sizeof(packet_users_list_request), &packet);
+}
+
+void command_p_olist(){
+	packet_users_list_request packet;
+	packet.online_only = 0;	
+	packet_send(new_session->s_serv, PACKET_USERS_LIST_REQUEST, sizeof(packet_users_list_request), &packet);
 }
 
 void command_message(char* message, uint16_t userid){
@@ -64,24 +80,23 @@ void command_message(char* message, uint16_t userid){
 	packet.senderid = new_session->my_id;
 	packet.receiverid = userid;
 	memcpy(packet.message.text, parse_message(message), CHAT_MESSAGE_MAXSIZE);
-	if(userid > 999)
-		packet_send(new_session->s_cl,  PACKET_CHAT_MESSAGE, sizeof(packet), &packet);
-	else
-		packet_send(new_session->s_serv,  PACKET_CHAT_MESSAGE, sizeof(packet), &packet);
+	if(userid == new_session->host_id){
+		packet_send(new_session->s_cl, PACKET_CHAT_MESSAGE, sizeof(packet_chat_message), &packet);	
+	}else
+	{
+		packet_send(new_session->s_serv, PACKET_CHAT_MESSAGE, sizeof(packet_chat_message), &packet);
+	}
 }
 
 
 void create_session(char *login, char *passw, int server_socket,struct sockaddr_in *serv_addr){
 	packet_auth_request auth;
-	packet_type_t packet_type;
-	packet_length_t length;
-	void *packet;
-
 	if((new_session = malloc(sizeof(session))) == NULL){
 		perror("malloc");
 		exit(1);	
 	}	
-
+	strcpy(new_session->login, login);
+	new_session->host_id = -1;
 	new_session->s_serv = server_socket;
   	new_session->addr = *serv_addr;
 	
@@ -89,33 +104,13 @@ void create_session(char *login, char *passw, int server_socket,struct sockaddr_
 	auth.login[-1] = '\0';
 	MD5((unsigned char *) passw, strlen(passw), (unsigned char*)&auth.passw);
   	packet_send(new_session->s_serv, PACKET_AUTH_REQUEST, sizeof(packet_auth_request), &auth);
-  	
+  	pr("");
  	if((pthread_create(&new_session->thread, NULL, (void*)session_client, NULL)) != 0 )
   	{
     	perror("pthread: ");
     	exit(1);  
   	}
-  	while(1){
-	    	if( !packet_recv(new_session->s_serv, &packet_type, &length, &packet)) 
-	    	{
-	     		printf("Connection closed\n");
-	     		exit(1);
-	    	}
-		switch(packet_type)
-	    	{
-	      	case PACKET_AUTH_RESPONSE:
-			new_session->my_id = ntohl(((packet_auth_response*)(packet))->userid);
-			break;
-	      	case PACKET_CLIENT_ADDRESS:
-	       		connect_to_client(new_session);
-			break;
-		case PACKET_CHAT_MESSAGE:
-			printf("%d : %s\n", ((packet_chat_message*)packet)->senderid, ((packet_chat_message*)packet)->message.text);	      	
-			break;
-		default:
-			break;
-	    		}
-	}
+	recving_packets(new_session->s_serv);
 }
 
 void session_client(void *arg)
@@ -123,30 +118,38 @@ void session_client(void *arg)
  	char *command_t = malloc(1);
 	char *strline = malloc(1);	
 	size_t str_len;
-	
+	pr("Connecting to server\n");
 	uint16_t userid;
 	while(1){
 		getline(&strline, &str_len, stdin);
+		pr("");		
 		if((userid = parse_id(strline)) != 0){
 			command_message(strline, userid);
 			continue;
 		}
 		sscanf(strline, "%s", command_t);
 		to_upper(command_t);
-	      	if(strcmp(command_t, "ID") == 0){
-			printf("My id = %d", new_session->my_id);
-			fflush(stdout);
-		}
 		if(strcmp(command_t, "/HOST") == 0){
 			command_host(strline);	
 		}
 		if(strcmp(command_t, "/CONNECT") == 0){
 			command_connect(strline);
 		}	
+		if(strcmp(command_t, "/P_LIST") == 0){
+			command_p_list();
+		}
+		if(strcmp(command_t, "/P_OLIST") == 0){
+			command_p_olist();
+		}
 		if(strcmp(command_t, "/COMMANDS") == 0){
-			printf("/id\n/add        <id>\n/host       <port>\n/connect    <address>:<port>\n");
+			pr("/p_list\n");
+			pr("/p_olist\n");
+			pr("/host       <port>\n");
+			pr("/connect    <address>:<port>\n");
 		}
 
 	}
+	free(command_t);
+	free(strline);
 }
 

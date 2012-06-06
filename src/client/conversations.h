@@ -34,5 +34,5 @@ void connecting(char* str);
 
 void* ConnectionThread(void *arg);
 
-void recving_packets();
+void recving_packets(int socket);
 #endif
