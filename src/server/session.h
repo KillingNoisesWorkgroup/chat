@@ -57,4 +57,7 @@ void send_client_address(session *s, packet_direct_connection_request *packet);
 // Sends packet_chat_message
 void send_chat_message(session *s, packet_chat_message *packet);
 
+// Sends users list packet
+void send_users_list(int dst, packet_users_list_request *packet);
+
 #endif

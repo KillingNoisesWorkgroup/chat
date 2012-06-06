@@ -93,6 +93,10 @@ void* Session(void *arg){
 			print_log(current_session->thread_info, "Got chat message");
 			send_chat_message(current_session, data);
 			break;
+		case PACKET_USERS_LIST_REQUEST:
+			print_log(current_session->thread_info, "Got users list request");
+			send_users_list(current_session->client_socket, (packet_users_list_request*)data);
+			break;
 		default:
 			print_log(current_session->thread_info, "Got unknown packet");
 			break;
@@ -169,6 +173,35 @@ void send_chat_message(session *s, packet_chat_message *packet){
 	session *tmp;
 	if(session_find_id(packet->receiverid, &tmp) != -1)
 		packet_send(tmp->client_socket, PACKET_CHAT_MESSAGE, sizeof(packet_chat_message), packet);
+}
+
+void send_users_list(int dst, packet_users_list_request *packet){
+	char *users_list;
+	char tmp[USER_NAME_MAXSIZE + 10 + 1 + 1];
+	int i, users_list_size;
+	session *s;
+	
+	pthread_mutex_lock(&database.users->locking_mutex);
+	users_list_size = (sizeof tmp)*(database.users->size) + 1;
+	if((users_list = malloc(users_list_size)) == NULL){
+		perror("malloc");
+		exit(1);
+	}
+	users_list[0] = '\0';
+	
+	for(i = 0; i < database.users->size; i++){
+		if(!(packet->online_only) || (session_find_id(((login_entry*)database.users->data[i])->id, &s) != -1)){
+			sprintf(tmp, "%10d %-*s\n",
+				((login_entry*)database.users->data[i])->id, 64,
+				((login_entry*)database.users->data[i])->login);
+			strcat(users_list, tmp);
+		}
+	}
+	users_list[users_list_size-1] = 0;
+	
+	pthread_mutex_unlock(&database.users->locking_mutex);
+	packet_send(dst, PACKET_GENERAL_STRING, users_list_size, users_list);
+	//free(users_list);
 }
 
 int user_is_authorized(session *s){
