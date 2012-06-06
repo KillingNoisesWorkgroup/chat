@@ -37,6 +37,7 @@ void create_session(int client_socket, struct sockaddr_in client_addres){
 	sprintf(new_session->thread_info, "unnamed");
 	new_session->state = SESSION_STATE_INITIAL_STATE;
 	new_session->client_socket = client_socket;
+	new_session->id = database.sessions->size;
 	memcpy(&new_session->client_address, &client_addres, sizeof(struct sockaddr_in));
 	
 	dynamic_array_add(database.sessions, new_session);
@@ -140,15 +141,9 @@ void authenticate(session *s, packet_auth_request *packet){
 
 
 void destroy_session(session* s){
-	session *tmp;
-	int pos;
-
 	close(s->client_socket);
-
-	pos = session_find_id(s->user->id, &tmp);
-	dynamic_array_delete_at(database.sessions, pos);
+	dynamic_array_delete_at(database.sessions, s->id);
 	print_log(s->thread_info, "Session terminated");
-
 	pthread_exit(NULL);
 }
 
