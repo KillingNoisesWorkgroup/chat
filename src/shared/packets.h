@@ -2,6 +2,7 @@
 // Do NOT include this file manually! Include networking.h instead!
 
 #define MAX_PACKET_STRING_LENGTH 256
+#define PACKET_GENERAL_STRING 100
 
 /* PACKET C2S - Auth Request */
 
