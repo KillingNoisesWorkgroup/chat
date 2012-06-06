@@ -64,49 +64,10 @@ typedef struct packet_chat_message{
 } packet_chat_message;
 
 
-/* PACKET C2S - Contact list request */
+/* PACKET C2S - Users list request */
 
-#define PACKET_CONTACT_LIST_REQUEST 7
-typedef struct packet_contact_list_request{
+#define PACKET_USERS_LIST_REQUEST 7
+typedef struct packet_users_list_request{
 	//empty
-} packet_contact_list_request;
-
-
-/* PACKET S2C - Contact */
-
-typedef struct contact_t{
-	uint32_t id;
-	char name[USER_NAME_MAXSIZE]; 
-} contact_t;
-
-#define PACKET_CONTACT 8
-typedef struct packet_contact{
-	contact_t contact;
-} packet_contact;
-
-
-/* PACKET - Contact list add request */
-
-#define PACKET_CONTACT_LIST_ADD_REQUEST 9
-typedef struct packet_contact_list_add_request{
-	uint32_t senderid;
-	uint32_t receiverid;
-} packet_contact_list_add_request;
-
-/* PACKET - Contact list add response */
-
-#define PACKET_CONTACT_LIST_ADD_RESPONSE 10
-typedef struct packet_contact_list_add_response{
-	uint32_t senderid;
-	uint32_t receiverid;
-	uint8_t accepted;
-} packet_contact_list_add_response;
-
-
-/* PACKET C2S - Contact delete */
-
-#define PACKET_CONTACT_LIST_DELETE 11
-typedef struct packet_contact_delete{
-	uint32_t userid;
-} packet_contact_delete;
+} packet_users_list_request;
 
