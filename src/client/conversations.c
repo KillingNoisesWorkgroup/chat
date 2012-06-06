@@ -169,7 +169,7 @@ void recving_packets(int socket){
 			}		
 			new_session->host_id = ((packet_id_host*)packet)->hostid;	
 			break;
-		case PACKET_USERS_LIST_REQUEST:
+		case PACKET_GENERAL_STRING:
 			pr((char *)packet);
 		default:
 			break;

@@ -130,24 +130,29 @@ void session_client(void *arg)
 		sscanf(strline, "%s", command_t);
 		to_upper(command_t);
 		if(strcmp(command_t, "/HOST") == 0){
-			command_host(strline);	
+			command_host(strline);
+			continue;	
 		}
 		if(strcmp(command_t, "/CONNECT") == 0){
 			command_connect(strline);
+			continue;
 		}	
 		if(strcmp(command_t, "/P_LIST") == 0){
 			command_p_list();
+			continue;
 		}
 		if(strcmp(command_t, "/P_OLIST") == 0){
 			command_p_olist();
+			continue;
 		}
 		if(strcmp(command_t, "/COMMANDS") == 0){
 			pr("/p_list\n");
 			pr("/p_olist\n");
 			pr("/host       <port>\n");
 			pr("/connect    <address>:<port>\n");
+			continue;
 		}
-
+		pr("Unknown command %s. Try use /commands");
 	}
 	free(command_t);
 	free(strline);
