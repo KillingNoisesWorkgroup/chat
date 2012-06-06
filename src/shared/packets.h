@@ -69,6 +69,6 @@ typedef struct packet_chat_message{
 
 #define PACKET_USERS_LIST_REQUEST 7
 typedef struct packet_users_list_request{
-	//empty
+	uint8_t online_only;
 } packet_users_list_request;
 
